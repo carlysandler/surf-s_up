@@ -52,3 +52,96 @@ Percentiles: where the number is in relation to the rest of the set of data.
 Count: the total number of numbers or items in a dataset.
 
 This data gives us a summary of different statistics for the amount of precipitation in a year. The count is the number of times precipitation was observed. The other statistics are the precipitation amounts for each station for each day.
+
+9.3.1 - Find the Number of Stations
+
+My only question is, how many stations are being used to collect this information? Is it possible that we don't have enough data collection stations for this information to be valid?"
+
+Thankfully, you know you can run a query on the SQLite database to find this information quickly. You respond, "Glad the analysis is helping you with your decision-making! Great question about the number of stations. Let me do some quick queries and find out for us." And, with that, you get back to work.
+
+We need to write a query to get the number of stations in our dataset. We'll use our session that we created earlier to query our database.
+
+Begin by adding the starting point for our query, which is the following line:
+
+Now we know there are 9 stations from which precipitation data is being collected. However, in order to truly answer W. Avy's question, we don't just need to know the number of stations; we need to know how active the stations are as well. That is, we want to figure out which stations tend to have the most precipitation recordings. Let's figure that out next
+
+
+In the left column is the station ID, and on the right are the counts for each station. The counts indicate which stations are most active. We can also see which stations are the least active.
+
+9.3.3
+Find Low, High, and Average Temperatures
+W. Avy tells you that he's interested in the most active station; he believes it will provide the most data and help you determine the best location for the surf shop. However, you know that more data doesn't necessarily equate to more accurate results. But W. Avy is passionate about the location—he's convinced that it will provide the best weather for surfing and eating ice cream. So you tell him that you'll investigate this location further.
+
+It occurs to you that he hasn't asked for an analysis of the temperature yet, so you decide to dive into temperature data.
+
+
+9.3.4
+Plot the Highest Number of Observations
+W. Avy is thrilled. He's ready to make a decision about the surf shop location. But before he takes his proposal to the board of directors, he could benefit from a visualization of your results. You want to make sure that all stakeholders have all the information they need about the station closest to your proposed surf shop location.
+
+You tell W. Avy that you're plotting the results of the analysis so that he can share a visual presentation with the board if needed, and convince them to invest in your shop.
+
+We need to create a plot that shows all of the temperatures in a given year for the station with the highest number of temperature observations.
+
+Create a Query for the Temperature Observations
+To create a query, first select the column we are interested in. We want to pull Measurement.tobs in order to get our total observations count. Add this to your code:
+
+session.query(Measurement.tobs)
+Now filter out all the stations except the most active station with filter(Measurement.station == 'USC00519281'). Your code should look like this:
+
+results = session.query(Measurement.tobs).\
+filter(Measurement.station == 'USC00519281')
+We need to apply another filter to consider only the most recent year. For this we can reuse some of the code we have written previously. Then we'll add the .all() function to save our results as a list. Here's what your query should look like:
+
+results = session.query(Measurement.tobs).\
+filter(Measurement.station == 'USC00519281').\
+filter(Measurement.date >= prev_year).all()
+To run this code, you will need to add a print statement around it.
+
+print(results)
+Your query results should look like the following.
+
+The printed query results showing total observations for the stations
+
+Not too easy to read, right? Let's fix that, as investors will need to read this data.
+
+
+
+To make the results easier to read, understand, and use, we'll put them in a DataFrame.
+
+Convert the Temperature Observation Results to a DataFrame
+REWIND
+When creating a DataFrame, our first parameter is our list, and the second parameter is the column(s) we want to put our data in. In this case, we want to put our temperature observations result list into a DataFrame.
+
+To convert the results to a DataFrame, add the following to your code:
+
+df = pd.DataFrame(results, columns=['tobs'])
+Add a print(df) statement after the last line and run the code. Below is what your data should now look like. Feel free to remove the index column.
+
+The total observations in DataFrame format
+
+Awesome! Now we'll use this data to create a plot.
+
+Plot the Temperature Observations
+We'll be creating a histogram from the temperature observations. This will allow us to quickly count how many temperature observations we have.
+
+IMPORTANT
+A histogram is a graph made up of a range of data that is separated into different bins.
+
+When creating a histogram, you'll need to figure how many bins you need. It's recommended that you stay within a range of 5 to 20 bins. You may need to play around with the data a bit to find a good fit somewhere between 5 and 20. A "good fit" is one that represents the data well and highlights areas where there is a lot of data and areas where there is not a lot of data. It's all about finding the right balance.
+
+We're going to divide our temperature observations into 12 different bins. This is intended to provide enough detail, but not too much. Note that we don't need to specify the ranges in which the data will be separated; we just need to specify the number of bins.
+
+To create the histogram, we need to use the plot() function and the hist() function and add the number of bins as a parameter. Add the following to your code:
+
+df.plot.hist(bins=12)
+Using plt.tight_layout(), we can compress the x-axis labels so that they fit into the box holding our plot.
+
+plt.tight_layout()
+For this particular graph, using this function won't change much, but it can be a lifesaver in situations where the x-axis doesn't fit into the box. It's a cosmetic change, but it makes a big difference when presenting professional work.
+
+When you run the code, your plot should look like the following. Notice how the 12 "bins" are visualized in this plot, just like you specified with your code df.plot.hist(bins=12). "Bin" refers to each rectangular column in the plot, as shown below.
+
+Histogram showing the number of observations in 12 bins.
+
+Looking at this plot, we can infer that a vast majority of the observations were over 67 degrees. If you count up the bins to the right of 67 degrees, you will get about 325 days where it was over 67 degrees when the temperature was observed.
